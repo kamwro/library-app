@@ -4,15 +4,15 @@ import { ConfigService } from '../config/config.service';
 import { Book } from '../book/book.entity';
 
 export const databaseConfig = (configService: ConfigService): TypeOrmModuleOptions => {
-  const { host, port, username, password, database } = configService.getDatabaseConfig();
+  const databaseConfig = configService.getDatabaseConfig();
 
   return {
     type: 'postgres',
-    host,
-    port,
-    username,
-    password,
-    database,
+    host: databaseConfig.HOST,
+    port: databaseConfig.PORT,
+    username: databaseConfig.USERNAME,
+    password: databaseConfig.PASSWORD,
+    database: databaseConfig.DATABASE,
     entities: [Book],
     synchronize: true, // TODO change to use migrations later
   };

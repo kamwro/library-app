@@ -1,31 +1,35 @@
-import { Injectable } from '@nestjs/common';
 import { ConfigService as NestConfigService } from '@nestjs/config';
+import { Injectable } from '@nestjs/common';
+import { z } from 'zod';
 
-interface DatabaseConfig {
-  host: string;
-  port: number;
-  username: string;
-  password: string;
-  database: string;
-}
+import { DatabaseConfigSchema } from './config.validation';
 
 @Injectable()
 export class ConfigService {
-  constructor(private readonly nestConfigService: NestConfigService) {}
+  readonly #nestConfigService: NestConfigService;
+  constructor(nestConfigService: NestConfigService) {
+    this.#nestConfigService = nestConfigService;
+  }
 
-  getDatabaseConfig(): DatabaseConfig {
-    const databaseConfigString = this.nestConfigService.get<string>('DATABASE_CONFIG');
-    if (!databaseConfigString) {
-      throw new Error('DATABASE_CONFIG is not defined in the .env file');
+  getDatabaseConfig(): z.infer<typeof DatabaseConfigSchema> {
+    return this.#parseEnvJson('DATABASE_CONFIG', DatabaseConfigSchema);
+  }
+
+  #parseEnvJson<T>(envKey: string, schema: z.ZodSchema<T>): T {
+    const envValue = this.#nestConfigService.get<string>(envKey);
+
+    if (!envValue) {
+      throw new Error(`${envKey} is not defined in the .env file`);
     }
 
     try {
-      return JSON.parse(databaseConfigString);
+      const parsedValue = JSON.parse(envValue) as z.infer<typeof schema>;
+      return schema.parse(parsedValue);
     } catch (error) {
       if (error instanceof Error) {
-        throw new Error(`Error parsing DATABASE_CONFIG JSON: ${error.message}`);
+        throw new Error(`Error parsing ${envKey}: ${error.message}`);
       }
-      throw new Error('Unknown exception');
+      throw new Error('Unknown error occurred');
     }
   }
 }
