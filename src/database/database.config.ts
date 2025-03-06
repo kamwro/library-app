@@ -1,15 +1,19 @@
 import type { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { ConfigService } from '@nestjs/config';
 
+import { ConfigService } from '../config/config.service';
 import { Book } from '../book/book.entity';
 
-export const databaseConfig = (configService: ConfigService): TypeOrmModuleOptions => ({
-  type: 'postgres',
-  host: configService.get<string>('DATABASE_HOST'),
-  port: configService.get<number>('DATABASE_PORT'),
-  username: configService.get<string>('DATABASE_USERNAME'),
-  password: configService.get<string>('DATABASE_PASSWORD'),
-  database: configService.get<string>('DATABASE_NAME'),
-  entities: [Book],
-  synchronize: true, // TODO: disable and use migration when ready
-});
+export const databaseConfig = (configService: ConfigService): TypeOrmModuleOptions => {
+  const { host, port, username, password, database } = configService.getDatabaseConfig();
+
+  return {
+    type: 'postgres',
+    host,
+    port,
+    username,
+    password,
+    database,
+    entities: [Book],
+    synchronize: true, // TODO change to use migrations later
+  };
+};
