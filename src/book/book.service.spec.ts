@@ -4,11 +4,14 @@ import { Book } from './book.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+const mockDate = new Date();
+
 describe('BookService', () => {
   let service: BookService;
   let bookRepository: Repository<Book>;
   let findSpy: jest.SpyInstance;
   let findOneSpy: jest.SpyInstance;
+  let insertMock: jest.SpyInstance;
 
   beforeEach(async () => {
     const mockRepository = {
@@ -20,6 +23,8 @@ describe('BookService', () => {
               title: 'Book Title',
               author: 'Author',
               isAvailable: true,
+              createdAt: mockDate,
+              updatedAt: null,
             }
           : null,
       ),
@@ -41,6 +46,7 @@ describe('BookService', () => {
 
     findSpy = jest.spyOn(bookRepository, 'find');
     findOneSpy = jest.spyOn(bookRepository, 'findOne');
+    insertMock = jest.spyOn(bookRepository, 'insert');
   });
 
   it('should be defined', () => {
@@ -54,12 +60,19 @@ describe('BookService', () => {
 
   it('should return a book by ID if it exists', async () => {
     const book = await service.findOneById('existing-id');
-    expect(book).toEqual({ id: 'existing-id', title: 'Book Title', author: 'Author' });
+    expect(book).toEqual({
+      id: 'existing-id',
+      title: 'Book Title',
+      author: 'Author',
+      updatedAt: null,
+      createdAt: mockDate,
+      isAvailable: true,
+    });
     expect(findOneSpy).toHaveBeenCalled();
   });
 
   it('should return null if book does not exist', async () => {
-    await expect(service.findOneById('non-existing-id')).resolves.toBeNull();
+    expect(service.findOneById('non-existing-id')).toBeNull();
     expect(findOneSpy).toHaveBeenCalled();
   });
 
@@ -67,14 +80,15 @@ describe('BookService', () => {
     const title = 'New Book';
     const author = 'New Author';
 
-    await expect(service.create(title, author)).resolves.toEqual({
+    expect(await service.create(title, author)).toEqual({
       message: 'Book created successfully!',
     });
 
-    expect(bookRepository.insert).toHaveBeenCalledWith({
+    expect(insertMock).toHaveBeenCalledWith({
       title,
       author,
       isAvailable: true,
+      updatedAt: null,
     });
   });
 });
