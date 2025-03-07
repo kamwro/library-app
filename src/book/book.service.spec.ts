@@ -71,7 +71,7 @@ describe('BookService', () => {
     expect(findOneSpy).toHaveBeenCalled();
   });
 
-  it('should return null if book does not exist', async () => {
+  it('should return null if book does not exist', () => {
     expect(service.findOneById('non-existing-id')).toBeNull();
     expect(findOneSpy).toHaveBeenCalled();
   });
