@@ -7,3 +7,7 @@ export const DatabaseConfigSchema = z.object({
   PASSWORD: z.string().min(1, { message: 'Password is required' }),
   DATABASE: z.string().min(1, { message: 'Database name is required' }),
 });
+
+export const AuthenticationConfigSchema = z.object({
+  JWT_SECRET: z.string().min(1, { message: 'JWT_SECRET is required' }),
+});

@@ -2,6 +2,7 @@ import type { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 import { ConfigService } from '../config/config.service';
 import { Book } from '../book/book.entity';
+import { User } from '../user/user.entity';
 
 export const databaseConfig = (configService: ConfigService): TypeOrmModuleOptions => {
   const databaseConfig = configService.getDatabaseConfig();
@@ -13,7 +14,7 @@ export const databaseConfig = (configService: ConfigService): TypeOrmModuleOptio
     username: databaseConfig.USERNAME,
     password: databaseConfig.PASSWORD,
     database: databaseConfig.DATABASE,
-    entities: [Book],
+    entities: [Book, User],
     synchronize: true, // TODO change to use migrations later
   };
 };

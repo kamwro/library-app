@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable } from '@nestjs/common';
 
 import { Book } from './book.entity';
-import { CreateBookResponse } from './dto/success-action-response.dto';
+import type { SuccessActionResponseDto } from './dto/success-action-response.dto';
 
 @Injectable()
 export class BookService {
@@ -21,7 +21,7 @@ export class BookService {
     return this.#bookRepository.findOne({ where: { id } });
   }
 
-  async create(title: string, author: string): Promise<CreateBookResponse> {
+  async create(title: string, author: string): Promise<SuccessActionResponseDto> {
     await this.#bookRepository.insert({ title, author, isAvailable: true, updatedAt: null });
     return { message: 'Book created successfully!' };
   }
