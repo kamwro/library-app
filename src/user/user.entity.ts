@@ -2,7 +2,6 @@ import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, Index } from 
 import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { USER_ROLE } from '../shared/const';
 
-
 registerEnumType(USER_ROLE, { name: 'UserRole' });
 
 @ObjectType()

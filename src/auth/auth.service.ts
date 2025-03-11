@@ -6,7 +6,9 @@ import {
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { InjectRepository } from '@nestjs/typeorm';
+import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
+import { Request } from 'express';
 
 import type { SuccessActionResponseDto } from '../book/dto/success-action-response.dto';
 import { USER_ROLE } from '../shared/const';
@@ -14,8 +16,6 @@ import { User } from '../user/user.entity';
 
 import { LoginUserDto } from './dto/login-user.dto';
 import { CreateUserDto } from './dto/create-user-dto';
-import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
 
 @Injectable()
 export class AuthService {
