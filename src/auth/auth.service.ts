@@ -15,6 +15,7 @@ import { User } from '../user/user.entity';
 import { LoginUserDto } from './dto/login-user.dto';
 import { CreateUserDto } from './dto/create-user-dto';
 import { JwtService } from '@nestjs/jwt';
+import { Request } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -73,5 +74,10 @@ export class AuthService {
     return {
       accessToken: this.#jwtService.sign(payload),
     };
+  }
+
+  static extractTokenFromHeader(request: Request): string | undefined {
+    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+    return type === 'Bearer' ? token : undefined;
   }
 }

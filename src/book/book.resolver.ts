@@ -1,13 +1,13 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { UseGuards } from '@nestjs/common';
 
+import { AuthGuardGraphQL } from '../auth/auth.guard.graphql';
 import { Roles } from '../roles/roles.decorator';
 import { USER_ROLE } from '../shared/const';
 
 import { Book } from './book.entity';
 import { BookService } from './book.service';
 import { SuccessActionResponseDto } from './dto/success-action-response.dto';
-import { UseGuards } from '@nestjs/common';
-import { AuthGuardRest } from '../auth/auth.guard.rest';
 
 @Resolver(() => Book)
 export class BookResolver {
@@ -16,22 +16,23 @@ export class BookResolver {
   constructor(bookService: BookService) {
     this.#bookService = bookService;
   }
-
-  @UseGuards(AuthGuardRest)
-  @Roles(USER_ROLE.USER)
   @Query(() => [Book])
+  @UseGuards(AuthGuardGraphQL)
+  @Roles(USER_ROLE.USER)
   async getBooks(): Promise<Book[]> {
     return this.#bookService.findAll();
   }
 
-  @Roles(USER_ROLE.USER)
   @Query(() => Book)
+  @UseGuards(AuthGuardGraphQL)
+  @Roles(USER_ROLE.USER)
   async getBookById(@Args('id') id: string): Promise<Book | null> {
     return this.#bookService.findOneById(id);
   }
 
-  @Roles(USER_ROLE.ADMIN)
   @Mutation(() => SuccessActionResponseDto)
+  @UseGuards(AuthGuardGraphQL)
+  @Roles(USER_ROLE.ADMIN)
   async addBook(
     @Args('title') title: string,
     @Args('author') author: string,

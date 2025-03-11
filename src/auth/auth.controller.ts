@@ -1,15 +1,15 @@
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Controller, Post, Body, HttpStatus, UseGuards } from '@nestjs/common';
 
-import { SuccessActionResponseDto } from '../book/dto/success-action-response.dto';
+import type { SuccessActionResponseDto } from '../book/dto/success-action-response.dto';
+import { Roles } from '../roles/roles.decorator';
+import { USER_ROLE } from '../shared/const';
+import { RolesGuard } from '../roles/roles.guard';
 
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login-user.dto';
 import { CreateUserDto } from './dto/create-user-dto';
 import { AuthGuardRest } from './auth.guard.rest';
-import { Roles } from '../roles/roles.decorator';
-import { USER_ROLE } from '../shared/const';
-import { RolesGuard } from '../roles/roles.guard';
 
 @ApiTags('Authentication')
 @Controller('auth')

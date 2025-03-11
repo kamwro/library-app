@@ -30,7 +30,8 @@ const getApiDocument = (app: INestApplication): OpenAPIObject => {
 const startApplication = async (app: INestApplication): Promise<void> => {
   await app.listen(process.env.PORT ?? 3000);
   console.log(`Server is running on http://localhost:${process.env.PORT ?? 3000}`);
-  console.log(`Docs on http://localhost:${process.env.PORT ?? 3000}/api/docs`);
+  console.log(`Rest API docs on http://localhost:${process.env.PORT ?? 3000}/api/docs`);
+  console.log(`GraphQL playground on http://localhost:${process.env.PORT ?? 3000}/graphql`);
 };
 
 export const bootstrap = async (): Promise<void> => {
