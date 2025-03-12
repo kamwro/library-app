@@ -1,6 +1,15 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, Index } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  Index,
+  OneToMany,
+} from 'typeorm';
 import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
+
 import { USER_ROLE } from '../shared/const';
+import { Book } from '../book/book.entity';
 
 registerEnumType(USER_ROLE, { name: 'UserRole' });
 
@@ -35,4 +44,8 @@ export class User {
   @Field(() => Date)
   @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', nullable: false })
   createdAt!: Date;
+
+  @Field(() => [Book])
+  @OneToMany(() => Book, book => book.reservedBy)
+  reservations!: Book[];
 }

@@ -47,6 +47,7 @@ export class AuthService {
       lastName,
       role: role as keyof typeof USER_ROLE,
       password: hashedPassword,
+      reservations: [],
     });
 
     await this.#userRepository.save(newUser);

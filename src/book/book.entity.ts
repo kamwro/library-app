@@ -1,12 +1,15 @@
 import {
-  Entity,
   Column,
-  PrimaryGeneratedColumn,
   CreateDateColumn,
-  UpdateDateColumn,
+  Entity,
   Index,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Field, ObjectType } from '@nestjs/graphql';
+
+import { User } from '../user/user.entity';
 
 @ObjectType()
 @Entity()
@@ -28,6 +31,10 @@ export class Book {
   @Column({ default: true, nullable: false })
   isAvailable!: boolean;
 
+  @Field()
+  @Column({ type: 'timestamp', nullable: true })
+  reservedAt!: Date;
+
   @Field(() => Date)
   @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', nullable: false })
   createdAt!: Date;
@@ -35,4 +42,8 @@ export class Book {
   @Field(() => Date, { nullable: true })
   @UpdateDateColumn({ type: 'timestamp', nullable: true })
   updatedAt!: Date | null;
+
+  @Field(() => User, { nullable: true })
+  @ManyToOne(() => User, user => user.reservations, { nullable: true })
+  reservedBy!: User;
 }

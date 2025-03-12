@@ -1,6 +1,7 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { UseGuards } from '@nestjs/common';
+import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { UnauthorizedException, UseGuards } from '@nestjs/common';
 
+import { AuthenticatedRequest } from '../shared/types';
 import { AuthGuardGraphQL } from '../auth/auth.guard.graphql';
 import { Roles } from '../roles/roles.decorator';
 import { USER_ROLE } from '../shared/const';
@@ -38,5 +39,22 @@ export class BookResolver {
     @Args('author') author: string,
   ): Promise<SuccessActionResponseDto> {
     return await this.#bookService.create(title, author);
+  }
+
+  @Mutation(() => SuccessActionResponseDto)
+  @UseGuards(AuthGuardGraphQL)
+  @Roles(USER_ROLE.USER)
+  async reserveBook(
+    @Args('bookId') bookId: string,
+    @Context('req') req: AuthenticatedRequest,
+  ): Promise<SuccessActionResponseDto> {
+    const userId = req.user?.sub;
+    console.log("=>(book.resolver.ts:52) req.user", req.user);
+
+    if (!userId) {
+      throw new UnauthorizedException('Unauthorized');
+    }
+
+    return await this.#bookService.reserve(userId, bookId);
   }
 }
