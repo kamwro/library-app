@@ -11,9 +11,9 @@ const mockDate = new Date();
 describe('BookService', () => {
   let service: BookService;
   let bookRepository: Repository<Book>;
-  let findBookSpy: jest.SpyInstance;
   let findOneBookSpy: jest.SpyInstance;
   let insertBookSpy: jest.SpyInstance;
+  let findBookAndCountSpy: jest.SpyInstance;
 
   let userRepository: Repository<User>;
 
@@ -36,6 +36,7 @@ describe('BookService', () => {
         ),
       insert: jest.fn().mockResolvedValue(undefined),
       save: jest.fn().mockResolvedValue(undefined),
+      findAndCount: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -56,9 +57,9 @@ describe('BookService', () => {
     bookRepository = module.get<Repository<Book>>(getRepositoryToken(Book));
     userRepository = module.get<Repository<User>>(getRepositoryToken(User));
 
-    findBookSpy = jest.spyOn(bookRepository, 'find');
     findOneBookSpy = jest.spyOn(bookRepository, 'findOne');
     insertBookSpy = jest.spyOn(bookRepository, 'insert');
+    findBookAndCountSpy = jest.spyOn(bookRepository, 'findAndCount');
   });
 
   it('should be defined', () => {
@@ -66,8 +67,117 @@ describe('BookService', () => {
   });
 
   it('should return an empty array when no books are found', async () => {
-    await expect(service.findAll()).resolves.toEqual([]);
-    expect(findBookSpy).toHaveBeenCalled();
+    findBookAndCountSpy.mockResolvedValue([[], 0]);
+
+    const result = await service.findAll({ page: 1, limit: 10 });
+
+    expect(result.records).toEqual([]);
+    expect(result.totalCount).toBe(0);
+    expect(result.totalPages).toBe(0);
+    expect(findBookAndCountSpy).toHaveBeenCalledWith({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      where: expect.any(Array),
+      take: 10,
+      skip: 0,
+      order: { title: 'DESC' },
+      relations: ['reservedBy'],
+    });
+  });
+
+  it('should return books when results are found', async () => {
+    const mockBooks = [{ title: 'Test Book', author: 'Author' }];
+    findBookAndCountSpy.mockResolvedValue([mockBooks, 1]);
+
+    const result = await service.findAll({ page: 1, limit: 10 });
+
+    expect(result.records).toEqual(mockBooks);
+    expect(result.totalCount).toBe(1);
+    expect(result.totalPages).toBe(1);
+    expect(findBookAndCountSpy).toHaveBeenCalledWith({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      where: expect.any(Array),
+      take: 10,
+      skip: 0,
+      order: { title: 'DESC' },
+      relations: ['reservedBy'],
+    });
+  });
+
+  it('should apply pagination correctly', async () => {
+    // Arrange: Mock the repository's findAndCount method to return books with pagination
+    const mockBooks = [
+      { title: 'Test Book 1', author: 'Author 1' },
+      { title: 'Test Book 2', author: 'Author 2' },
+    ];
+    findBookAndCountSpy.mockResolvedValue([mockBooks, 20]);
+
+    const result = await service.findAll({ page: 2, limit: 5 });
+
+    expect(result.records).toEqual(mockBooks);
+    expect(result.totalCount).toBe(20);
+    expect(result.totalPages).toBe(4);
+    expect(findBookAndCountSpy).toHaveBeenCalledWith({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      where: expect.any(Array),
+      take: 5,
+      skip: 5,
+      order: { title: 'DESC' },
+      relations: ['reservedBy'],
+    });
+  });
+
+  it('should apply search filter correctly', async () => {
+    const mockBooks = [{ title: 'Harry Potter', author: 'J.K. Rowling' }];
+    findBookAndCountSpy.mockResolvedValue([mockBooks, 1]);
+
+    const result = await service.findAll({ page: 1, limit: 10, search: 'Harry' });
+
+    expect(result.records).toEqual(mockBooks);
+    expect(result.totalCount).toBe(1);
+    expect(result.totalPages).toBe(1);
+    expect(findBookAndCountSpy).toHaveBeenCalledWith({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      where: expect.any(Array),
+      take: 10,
+      skip: 0,
+      order: { title: 'DESC' },
+      relations: ['reservedBy'],
+    });
+  });
+
+  it('should apply sorting correctly', async () => {
+    const mockBooks = [
+      { title: 'Z Book', author: 'Author Z' },
+      { title: 'A Book', author: 'Author A' },
+    ];
+
+    findBookAndCountSpy.mockResolvedValue([
+      mockBooks.sort((a, b) => a.author.localeCompare(b.author)),
+      2,
+    ]);
+
+    const result = await service.findAll({
+      page: 1,
+      limit: 10,
+      sortBy: 'author',
+      sortOrder: 'ASC',
+    });
+
+    expect(result.records).toEqual([
+      { title: 'A Book', author: 'Author A' },
+      { title: 'Z Book', author: 'Author Z' },
+    ]);
+
+    expect(result.totalCount).toBe(2);
+    expect(result.totalPages).toBe(1);
+    expect(findBookAndCountSpy).toHaveBeenCalledWith({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      where: expect.any(Array),
+      take: 10,
+      skip: 0,
+      order: { author: 'ASC' },
+      relations: ['reservedBy'],
+    });
   });
 
   it('should return a book by ID if it exists', async () => {

@@ -1,4 +1,4 @@
-import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Context, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { UnauthorizedException, UseGuards } from '@nestjs/common';
 
 import { AuthenticatedRequest } from '../shared/types';
@@ -9,6 +9,7 @@ import { USER_ROLE } from '../shared/const';
 import { Book } from './book.entity';
 import { BookService } from './book.service';
 import { SuccessActionResponseDto } from './dto/success-action-response.dto';
+import { PaginatedBooks } from './schemas/paginated-books.schema';
 
 @Resolver(() => Book)
 export class BookResolver {
@@ -17,11 +18,18 @@ export class BookResolver {
   constructor(bookService: BookService) {
     this.#bookService = bookService;
   }
-  @Query(() => [Book])
+  @Query(() => PaginatedBooks)
   @UseGuards(AuthGuardGraphQL)
   @Roles(USER_ROLE.USER)
-  async getBooks(): Promise<Book[]> {
-    return this.#bookService.findAll();
+  async getBooks(
+    @Args('page', { type: () => Int, defaultValue: 1 }) page: number,
+    @Args('limit', { type: () => Int, defaultValue: 10 }) limit: number,
+    @Args('search', { type: () => String, nullable: true }) search?: string,
+    @Args('sortBy', { type: () => String, nullable: true, defaultValue: 'title' }) sortBy?: string,
+    @Args('sortOrder', { type: () => String, nullable: true, defaultValue: 'ASC' })
+    sortOrder?: 'ASC' | 'DESC',
+  ): Promise<PaginatedBooks> {
+    return await this.#bookService.findAll({ page, limit, search, sortBy, sortOrder });
   }
 
   @Query(() => Book)
@@ -49,7 +57,6 @@ export class BookResolver {
     @Context('req') req: AuthenticatedRequest,
   ): Promise<SuccessActionResponseDto> {
     const userId = req.user?.sub;
-    console.log("=>(book.resolver.ts:52) req.user", req.user);
 
     if (!userId) {
       throw new UnauthorizedException('Unauthorized');

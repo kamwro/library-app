@@ -1,4 +1,4 @@
-import type { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable, NotFoundException } from '@nestjs/common';
 
@@ -6,6 +6,8 @@ import { User } from '../user/user.entity';
 
 import { Book } from './book.entity';
 import type { SuccessActionResponseDto } from './dto/success-action-response.dto';
+import type { FindAllBooksProps } from './book.types';
+import type { PaginatedBooks } from './schemas/paginated-books.schema';
 
 @Injectable()
 export class BookService {
@@ -20,8 +22,31 @@ export class BookService {
     this.#userRepository = userRepository;
   }
 
-  findAll(): Promise<Book[]> {
-    return this.#bookRepository.find({ relations: ['reservedBy'] });
+  async findAll({
+    search = '',
+    page = 1,
+    sortBy = 'title',
+    sortOrder = 'DESC',
+    limit = 10,
+  }: FindAllBooksProps): Promise<PaginatedBooks> {
+    const [records, totalCount] = await this.#bookRepository.findAndCount({
+      where: [{ title: Like(`%${search}%`) }, { author: Like(`%${search}%`) }],
+      take: limit,
+      skip: (page - 1) * limit,
+      order: {
+        [sortBy]: sortOrder,
+      },
+      relations: ['reservedBy'],
+    });
+
+    const totalPages = Math.ceil(totalCount / limit);
+
+    return {
+      records,
+      currentPage: page,
+      totalCount,
+      totalPages,
+    };
   }
 
   findOneById(id: string): Promise<Book | null> {
