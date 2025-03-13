@@ -1,20 +1,24 @@
+import { JwtModule } from '@nestjs/jwt';
 import { Module } from '@nestjs/common';
 
+import { AuthModule } from './auth/auth.module';
 import { BookModule } from './book/book.module';
 import { ConfigModule } from './config/config.module';
-import { DatabaseModule } from './database/database.module';
-import { GraphQLModule } from './graphql/graphql.module';
-import { AuthModule } from './auth/auth.module';
-import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from './config/config.service';
+import { GraphQLModule } from './graphql/graphql.module';
+import { ReservationLogModule } from './reservation-log/reservation-log.module';
+import { PgModule } from './pg/pg.module';
+import { MongoDbModule } from './mongodb/mongodb.module';
 
 @Module({
   imports: [
+    AuthModule,
     BookModule,
     ConfigModule,
-    DatabaseModule,
     GraphQLModule,
-    AuthModule,
+    MongoDbModule,
+    PgModule,
+    ReservationLogModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

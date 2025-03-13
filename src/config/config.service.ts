@@ -2,7 +2,7 @@ import { ConfigService as NestConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
 
-import { AuthenticationConfigSchema, DatabaseConfigSchema } from './config.validation';
+import { AuthenticationConfigSchema, MongoConfigSchema, PgConfigSchema } from './config.validation';
 
 @Injectable()
 export class ConfigService {
@@ -11,8 +11,12 @@ export class ConfigService {
     this.#nestConfigService = nestConfigService;
   }
 
-  getDatabaseConfig(): z.infer<typeof DatabaseConfigSchema> {
-    return this.#parseEnvJson('DATABASE_CONFIG', DatabaseConfigSchema);
+  getPgConfig(): z.infer<typeof PgConfigSchema> {
+    return this.#parseEnvJson('PG_CONFIG', PgConfigSchema);
+  }
+
+  getMongoConfig(): z.infer<typeof MongoConfigSchema> {
+    return this.#parseEnvJson('MONGO_CONFIG', MongoConfigSchema);
   }
 
   getAuthenticationConfig(): z.infer<typeof AuthenticationConfigSchema> {

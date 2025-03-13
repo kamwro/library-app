@@ -2,6 +2,7 @@ import { Like, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable, NotFoundException } from '@nestjs/common';
 
+import { ReservationLogService } from '../reservation-log/reservation-log.service';
 import { User } from '../user/user.entity';
 
 import { Book } from './book.entity';
@@ -13,13 +14,16 @@ import type { PaginatedBooks } from './schemas/paginated-books.schema';
 export class BookService {
   readonly #bookRepository: Repository<Book>;
   readonly #userRepository: Repository<User>;
+  readonly #reservationLogService: ReservationLogService;
 
   constructor(
     @InjectRepository(Book) bookRepository: Repository<Book>,
     @InjectRepository(User) userRepository: Repository<User>,
+    reservationLogService: ReservationLogService,
   ) {
     this.#bookRepository = bookRepository;
     this.#userRepository = userRepository;
+    this.#reservationLogService = reservationLogService;
   }
 
   async findAll({
@@ -83,6 +87,8 @@ export class BookService {
     user.reservations.push(book);
 
     await Promise.all([this.#bookRepository.save(book), this.#userRepository.save(user)]);
+
+    await this.#reservationLogService.createLog(userId, bookId, 'reserve');
 
     return { message: 'Book reserved successfully' };
   }

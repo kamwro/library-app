@@ -4,8 +4,8 @@ import { ConfigService } from '../config/config.service';
 import { Book } from '../book/book.entity';
 import { User } from '../user/user.entity';
 
-export const databaseConfig = (configService: ConfigService): TypeOrmModuleOptions => {
-  const databaseConfig = configService.getDatabaseConfig();
+export const pgConfig = (configService: ConfigService): TypeOrmModuleOptions => {
+  const databaseConfig = configService.getPgConfig();
 
   return {
     type: 'postgres',

@@ -23,7 +23,7 @@ describe('ConfigService', () => {
     const validDatabaseConfig = JSON.stringify(mockDatabaseConfig);
     mockNestConfigService.get.mockReturnValue(validDatabaseConfig);
 
-    const result = configService.getDatabaseConfig();
+    const result = configService.getPgConfig();
 
     expect(result).toEqual(mockDatabaseConfig);
   });
@@ -31,7 +31,7 @@ describe('ConfigService', () => {
   it('should throw an error if DATABASE_CONFIG is not defined', () => {
     mockNestConfigService.get.mockReturnValue(undefined);
 
-    expect(() => configService.getDatabaseConfig()).toThrowError(
+    expect(() => configService.getPgConfig()).toThrowError(
       'DATABASE_CONFIG is not defined in the .env file',
     );
   });
@@ -39,7 +39,7 @@ describe('ConfigService', () => {
   it('should throw an error if DATABASE_CONFIG has invalid JSON', () => {
     mockNestConfigService.get.mockReturnValue('invalid-json');
 
-    expect(() => configService.getDatabaseConfig()).toThrowError();
+    expect(() => configService.getPgConfig()).toThrowError();
   });
 
   it('should throw an error if DATABASE_CONFIG does not match the expected schema', () => {
@@ -52,6 +52,6 @@ describe('ConfigService', () => {
       }),
     );
 
-    expect(() => configService.getDatabaseConfig()).toThrowError();
+    expect(() => configService.getPgConfig()).toThrowError();
   });
 });

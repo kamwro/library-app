@@ -3,7 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ConfigModule } from '../config/config.module';
 import { ConfigService } from '../config/config.service';
-import { databaseConfig } from './database.config';
+
+import { pgConfig } from './pg.config';
 
 @Module({
   imports: [
@@ -11,9 +12,9 @@ import { databaseConfig } from './database.config';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        return databaseConfig(configService);
+        return pgConfig(configService);
       },
     }),
   ],
 })
-export class DatabaseModule {}
+export class PgModule {}
